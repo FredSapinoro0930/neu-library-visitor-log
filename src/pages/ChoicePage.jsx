@@ -33,7 +33,7 @@ function ChoicePage({ user }) {
         <h1 style={{color:'#1a5c1a', fontSize:'20px', fontWeight:'700', margin:'0 0 4px'}}>Welcome, {user?.displayName}!</h1>
         <p style={{color:'#555', fontSize:'14px', margin:'0 0 8px'}}>How would you like to continue?</p>
 
-        <div style={{display:'flex', height:'4px', borderRadius:'2px', overflow:'hidden', margin:'12px auto 28px', width:'80px'}}>
+        <div style={{display:'flex', height:'1px', borderRadius:'2px', overflow:'hidden', margin:'12px auto 28px', width:'200px'}}>
           <div style={{flex:1, backgroundColor:'#1a5c1a'}}/>
           <div style={{flex:1, backgroundColor:'#fff'}}/>
           <div style={{flex:1, backgroundColor:'#c0392b'}}/>

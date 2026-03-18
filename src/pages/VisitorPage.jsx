@@ -16,6 +16,7 @@ function VisitorPage({ user }) {
   const [isBlocked, setIsBlocked] = useState(false)
   const [loading, setLoading] = useState(true)
   const [studentName, setStudentName] = useState('')
+  const [countdown, setCountdown] = useState(5)
 
   useEffect(() => {
     const checkBlocked = async () => {
@@ -32,6 +33,23 @@ function VisitorPage({ user }) {
     }
     checkBlocked()
   }, [user])
+
+  // Auto logout countdown after visit is submitted
+  useEffect(() => {
+    if (!submitted) return
+    setCountdown(5)
+    const interval = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(interval)
+          handleLogout()
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [submitted])
 
   const displayName = user.displayName || studentName
 
@@ -142,7 +160,7 @@ function VisitorPage({ user }) {
   }
 
   const divider = (
-    <div style={{display:'flex', height:'4px', borderRadius:'2px', overflow:'hidden', margin:'12px auto 20px', width:'80px'}}>
+    <div style={{display:'flex', height:'1px', borderRadius:'2px', overflow:'hidden', margin:'12px auto 20px', width:'200px'}}>
       <div style={{flex:1, backgroundColor:'#1a5c1a'}}/>
       <div style={{flex:1, backgroundColor:'#fff'}}/>
       <div style={{flex:1, backgroundColor:'#c0392b'}}/>
@@ -219,10 +237,33 @@ function VisitorPage({ user }) {
         <p style={{color:'#666', margin:'0 0 4px'}}>Program: <strong>{program}</strong></p>
         <p style={{color:'#666', margin:'0 0 16px'}}>Purpose: <strong>{reason}</strong></p>
         {divider}
-        <div style={{background:'rgba(255,255,255,0.5)', borderRadius:'8px', padding:'12px', marginBottom:'24px'}}>
+        <div style={{background:'rgba(255,255,255,0.5)', borderRadius:'8px', padding:'12px', marginBottom:'16px'}}>
           <p style={{color:'#555', fontSize:'13px', margin:0}}>Visit logged successfully. Enjoy your time at the library!</p>
         </div>
-        <button style={buttonStyle} onMouseEnter={handleBtnHover} onMouseLeave={handleBtnLeave} onClick={handleLogout}>Logout</button>
+
+        {/* Countdown */}
+        <div style={{marginBottom:'16px'}}>
+          <p style={{color:'#666', fontSize:'13px', margin:'0 0 8px'}}>
+            Returning to login in <strong style={{color:'#1a5c1a', fontSize:'16px'}}>{countdown}</strong> seconds...
+          </p>
+          <div style={{backgroundColor:'#f0f0f0', borderRadius:'6px', height:'6px', overflow:'hidden'}}>
+            <div style={{
+              backgroundColor:'#1a5c1a',
+              height:'6px',
+              borderRadius:'6px',
+              width:`${(countdown / 5) * 100}%`,
+              transition:'width 1s linear'
+            }}/>
+          </div>
+        </div>
+
+        <button
+          style={buttonStyle}
+          onMouseEnter={handleBtnHover}
+          onMouseLeave={handleBtnLeave}
+          onClick={handleLogout}>
+          Done
+        </button>
       </div>
     </div>
   )

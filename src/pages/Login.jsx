@@ -196,7 +196,7 @@ function Login() {
   }
 
   const divider = (
-    <div style={{display:'flex', height:'1px', borderRadius:'2px', overflow:'hidden', margin:'12px auto 20px', width:'200px'}}>
+    <div style={{display:'flex', height:'2px', borderRadius:'2px', overflow:'hidden', margin:'12px auto 20px', width:'200px'}}>
       <div style={{flex:1, backgroundColor:'#1a5c1a'}}/>
       <div style={{flex:1, backgroundColor:'#fff'}}/>
       <div style={{flex:1, backgroundColor:'#c0392b'}}/>
@@ -257,6 +257,7 @@ function Login() {
         <img src={neuLogo} alt="NEU Logo" style={{width:'90px', height:'90px', marginBottom:'12px'}} />
         <h1 style={{color:'#1a5c1a', fontSize:'20px', fontWeight:'700', margin:'0 0 4px'}}>New Era University</h1>
         <h2 style={{color:'#333', fontSize:'14px', fontWeight:'500', margin:'0 0 4px'}}>Library Visitor Log System</h2>
+        <p style={{color:'#1a5c1a', fontSize:'13px', fontWeight:'600', margin:'4px 0 0', letterSpacing:'0.3px'}}>Welcome to NEU Library!</p>
         {divider}
 
         {/* Tabs */}
