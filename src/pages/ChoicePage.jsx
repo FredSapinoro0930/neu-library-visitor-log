@@ -12,73 +12,202 @@ function ChoicePage({ user }) {
     navigate('/')
   }
 
+  // 🔥 Hover effects
+  const handleBtnHover = e => {
+    e.currentTarget.style.transform = 'translateY(-2px)'
+    e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.25)'
+  }
+
+  const handleBtnLeave = e => {
+    e.currentTarget.style.transform = 'translateY(0)'
+    e.currentTarget.style.boxShadow = 'none'
+  }
+
+  const handlePrimaryHover = e => {
+    e.currentTarget.style.backgroundColor = '#144d14'
+    e.currentTarget.style.transform = 'translateY(-2px)'
+  }
+
+  const handlePrimaryLeave = e => {
+    e.currentTarget.style.backgroundColor = '#1a5c1a'
+    e.currentTarget.style.transform = 'translateY(0)'
+  }
+
+  const handleOutlineHover = e => {
+    e.currentTarget.style.backgroundColor = '#1a5c1a'
+    e.currentTarget.style.color = 'white'
+    e.currentTarget.style.transform = 'translateY(-2px)'
+  }
+
+  const handleOutlineLeave = e => {
+    e.currentTarget.style.backgroundColor = 'white'
+    e.currentTarget.style.color = '#1a5c1a'
+    e.currentTarget.style.transform = 'translateY(0)'
+  }
+
+  const handleCardHover = e => {
+    e.currentTarget.style.transform = 'scale(1.02)'
+    e.currentTarget.style.boxShadow = '0 25px 70px rgba(0,0,0,0.6)'
+  }
+
+  const handleCardLeave = e => {
+    e.currentTarget.style.transform = 'scale(1)'
+    e.currentTarget.style.boxShadow = '0 20px 60px rgba(0,0,0,0.5)'
+  }
+
   return (
-    <div style={{position:'relative', minHeight:'100vh', width:'100vw', overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', padding:'20px', boxSizing:'border-box'}}>
-      <div style={{position:'absolute', top:0, left:0, width:'100%', height:'100%', backgroundImage:`url(${schoolBg})`, backgroundSize:'cover', backgroundPosition:'center', filter:'blur(2px)', zIndex:-1}}/>
-      <div style={{position:'absolute', top:0, left:0, right:0, bottom:0, background:'rgba(0,0,0,0.45)', zIndex:0}}/>
+    <div style={{
+      position:'relative',
+      minHeight:'100vh',
+      width:'100vw',
+      overflow:'hidden',
+      display:'flex',
+      alignItems:'center',
+      justifyContent:'center',
+      padding:'20px',
+      boxSizing:'border-box'
+    }}>
 
+      {/* Background */}
       <div style={{
-        position:'relative', zIndex:1,
-        backgroundColor:'rgba(255,255,255,0.85)',
-        backdropFilter:'blur(8px)',
-        borderRadius:'16px',
-        boxShadow:'0 20px 60px rgba(0,0,0,0.5)',
-        padding:'48px 40px',
+        position:'absolute',
+        top:0,
+        left:0,
         width:'100%',
-        maxWidth:'440px',
-        textAlign:'center',
-        borderTop:'5px solid #1a5c1a'
-      }}>
-        <img src={neuLogo} alt="NEU Logo" style={{width:'90px', height:'90px', marginBottom:'12px'}} />
-        <h1 style={{color:'#1a5c1a', fontSize:'20px', fontWeight:'700', margin:'0 0 4px'}}>Welcome, {user?.displayName}!</h1>
-        <p style={{color:'#555', fontSize:'14px', margin:'0 0 8px'}}>How would you like to continue?</p>
+        height:'100%',
+        backgroundImage:`url(${schoolBg})`,
+        backgroundSize:'cover',
+        backgroundPosition:'center',
+        filter:'blur(3px)',
+        zIndex:-1
+      }}/>
 
-        <div style={{display:'flex', height:'1px', borderRadius:'2px', overflow:'hidden', margin:'12px auto 28px', width:'200px'}}>
+      {/* Overlay */}
+      <div style={{
+        position:'absolute',
+        top:0,
+        left:0,
+        right:0,
+        bottom:0,
+        background:'rgba(0,0,0,0.45)',
+        zIndex:0
+      }}/>
+
+      {/* Card */}
+      <div
+        onMouseEnter={handleCardHover}
+        onMouseLeave={handleCardLeave}
+        style={{
+          position:'relative',
+          zIndex:1,
+          backgroundColor:'rgba(255,255,255,0.65)',
+          backdropFilter:'blur(8px)',
+          borderRadius:'16px',
+          boxShadow:'0 20px 60px rgba(0,0,0,0.5)',
+          padding:'48px 40px',
+          width:'100%',
+          maxWidth:'440px',
+          textAlign:'center',
+          borderTop:'5px solid #1a5c1a',
+          transition:'all 0.3s ease'
+        }}
+      >
+        <img src={neuLogo} alt="NEU Logo" style={{width:'90px', height:'90px', marginBottom:'12px'}} />
+
+        <h1 style={{color:'#1a5c1a', fontSize:'20px', fontWeight:'700', margin:'0 0 4px'}}>
+          Welcome, {user?.displayName}!
+        </h1>
+
+        <p style={{color:'#555', fontSize:'14px', margin:'0 0 8px'}}>
+          How would you like to continue?
+        </p>
+
+        {/* Divider */}
+        <div style={{
+          display:'flex',
+          height:'2px',
+          borderRadius:'2px',
+          overflow:'hidden',
+          margin:'12px auto 28px',
+          width:'200px'
+        }}>
           <div style={{flex:1, backgroundColor:'#1a5c1a'}}/>
           <div style={{flex:1, backgroundColor:'#fff'}}/>
           <div style={{flex:1, backgroundColor:'#c0392b'}}/>
         </div>
 
+        {/* Buttons */}
         <div style={{display:'flex', flexDirection:'column', gap:'12px'}}>
-          <button onClick={() => navigate('/admin')} style={{
-            padding:'16px',
-            backgroundColor:'#1a5c1a',
-            color:'white',
-            border:'none',
-            borderRadius:'10px',
-            fontSize:'15px',
-            fontWeight:'600',
-            cursor:'pointer'
-          }}>
+
+          {/* Admin */}
+          <button
+            onClick={() => navigate('/admin')}
+            onMouseEnter={(e) => { handlePrimaryHover(e); handleBtnHover(e) }}
+            onMouseLeave={(e) => { handlePrimaryLeave(e); handleBtnLeave(e) }}
+            style={{
+              padding:'16px',
+              backgroundColor:'#1a5c1a',
+              color:'white',
+              border:'none',
+              borderRadius:'10px',
+              fontSize:'15px',
+              fontWeight:'600',
+              cursor:'pointer',
+              transition:'all 0.2s ease'
+            }}
+          >
             Admin Dashboard
-            <div style={{fontSize:'12px', fontWeight:'400', opacity:0.8, marginTop:'2px'}}>View statistics and manage visitors</div>
+            <div style={{fontSize:'12px', fontWeight:'400', opacity:0.8, marginTop:'2px'}}>
+              View statistics and manage visitors
+            </div>
           </button>
 
-          <button onClick={() => navigate('/visitor')} style={{
-            padding:'16px',
-            backgroundColor:'white',
-            color:'#1a5c1a',
-            border:'2px solid #1a5c1a',
-            borderRadius:'10px',
-            fontSize:'15px',
-            fontWeight:'600',
-            cursor:'pointer'
-          }}>
+          {/* Visitor */}
+          <button
+            onClick={() => navigate('/visitor')}
+            onMouseEnter={(e) => { handleOutlineHover(e); handleBtnHover(e) }}
+            onMouseLeave={(e) => { handleOutlineLeave(e); handleBtnLeave(e) }}
+            style={{
+              padding:'16px',
+              backgroundColor:'white',
+              color:'#1a5c1a',
+              border:'2px solid #1a5c1a',
+              borderRadius:'10px',
+              fontSize:'15px',
+              fontWeight:'600',
+              cursor:'pointer',
+              transition:'all 0.2s ease'
+            }}
+          >
             Visitor Check-in
-            <div style={{fontSize:'12px', fontWeight:'400', color:'#666', marginTop:'2px'}}>Log a visit to the library</div>
+            <div style={{fontSize:'12px', fontWeight:'400', color:'#666', marginTop:'2px'}}>
+              Log a visit to the library
+            </div>
           </button>
 
-          <button onClick={handleLogout} style={{
-            padding:'11px',
-            backgroundColor:'transparent',
-            color:'#888',
-            border:'1px solid #ddd',
-            borderRadius:'8px',
-            fontSize:'13px',
-            cursor:'pointer'
-          }}>
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#f5f5f5'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent'
+            }}
+            style={{
+              padding:'11px',
+              backgroundColor:'transparent',
+              color:'#888',
+              border:'1px solid #ddd',
+              borderRadius:'8px',
+              fontSize:'13px',
+              cursor:'pointer',
+              transition:'all 0.2s ease'
+            }}
+          >
             Logout
           </button>
+
         </div>
       </div>
     </div>
