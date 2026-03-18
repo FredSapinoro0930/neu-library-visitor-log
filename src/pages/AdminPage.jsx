@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { auth, db } from '../firebase'
 import { signOut } from 'firebase/auth'
-import { collection, getDocs, doc, updateDoc } from 'firebase/firestore'
+import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore'
 import { useNavigate } from 'react-router-dom'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -19,6 +19,7 @@ function AdminPage({ user }) {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [activeTab, setActiveTab] = useState('dashboard')
+  const [animating, setAnimating] = useState(false)
 
   useEffect(() => { fetchData() }, [])
 
@@ -27,6 +28,15 @@ function AdminPage({ user }) {
     setVisits(visitsSnapshot.docs.map(d => ({ id: d.id, ...d.data() })))
     const usersSnapshot = await getDocs(collection(db, 'users'))
     setUsers(usersSnapshot.docs.map(d => ({ id: d.id, ...d.data() })))
+  }
+
+  const switchTab = (newTab) => {
+    if (newTab === activeTab) return
+    setAnimating(true)
+    setTimeout(() => {
+      setActiveTab(newTab)
+      setAnimating(false)
+    }, 200)
   }
 
   const getFilteredVisits = () => {
@@ -68,6 +78,21 @@ function AdminPage({ user }) {
     navigate('/')
   }
 
+  const handleClearLogs = async () => {
+    const confirm = window.confirm('Are you sure you want to delete ALL visitor logs? This cannot be undone.')
+    if (!confirm) return
+    try {
+      const snapshot = await getDocs(collection(db, 'visits'))
+      const deletePromises = snapshot.docs.map(d => deleteDoc(doc(db, 'visits', d.id)))
+      await Promise.all(deletePromises)
+      fetchData()
+      alert('All visitor logs have been cleared.')
+    } catch (error) {
+      console.error(error)
+      alert('Failed to clear logs.')
+    }
+  }
+
   const exportPDF = () => {
     const filtered = getFilteredVisits()
     const pdf = new jsPDF()
@@ -92,88 +117,124 @@ function AdminPage({ user }) {
     border: '1px solid #ddd',
     fontSize: '14px',
     backgroundColor: 'white',
-    outline: 'none'
-  }
-
-  const cardStyle = {
-    backgroundColor: 'white',
-    padding: '20px 24px',
-    borderRadius: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-    textAlign: 'center',
-    minWidth: '150px',
-    borderTop: '4px solid'
+    outline: 'none',
+    transition: 'border-color 0.2s, box-shadow 0.2s'
   }
 
   const tabStyle = (tab) => ({
-    padding: '12px 24px',
+    padding: '14px 28px',
     border: 'none',
     borderBottom: activeTab === tab ? '3px solid white' : '3px solid transparent',
     backgroundColor: 'transparent',
-    color: activeTab === tab ? 'white' : 'rgba(255,255,255,0.6)',
-    fontWeight: activeTab === tab ? '600' : '400',
+    color: activeTab === tab ? 'white' : 'rgba(255,255,255,0.55)',
+    fontWeight: activeTab === tab ? '700' : '400',
     fontSize: '14px',
     cursor: 'pointer',
-    letterSpacing: '0.3px'
+    letterSpacing: '0.3px',
+    transition: 'all 0.25s ease'
   })
+
+  const statCards = [
+    { label: 'Total Visits', value: filtered.length, color: '#1a5c1a', bg: '#e8f5e9' },
+    { label: 'Employees', value: filtered.filter(v => v.isEmployee).length, color: '#c8a000', bg: '#fffde7' },
+    { label: 'Students', value: filtered.filter(v => !v.isEmployee).length, color: '#1a73e8', bg: '#e8f0fe' },
+    { label: 'Colleges', value: [...new Set(filtered.map(v => v.college))].filter(Boolean).length, color: '#c0392b', bg: '#fce8e6' },
+    { label: 'Visit Reasons', value: [...new Set(filtered.map(v => v.reason))].filter(Boolean).length, color: '#6f42c1', bg: '#f3e8fd' }
+  ]
 
   return (
     <div style={{minHeight:'100vh', backgroundColor:'#f0f4f0'}}>
 
       {/* Header */}
-      <div style={{backgroundColor:'#1a5c1a', boxShadow:'0 2px 8px rgba(0,0,0,0.2)'}}>
+      <div style={{
+        background: 'linear-gradient(135deg, #1a5c1a 0%, #0d3d0d 100%)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.25)'
+      }}>
         <div style={{maxWidth:'1200px', margin:'0 auto', padding:'0 24px'}}>
-
-          {/* Top bar */}
-          <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', height:'68px'}}>
+          <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', height:'72px'}}>
             <div style={{display:'flex', alignItems:'center', gap:'14px'}}>
-              <img src={neuLogo} alt="NEU" style={{width:'44px', height:'44px'}} />
+              <div style={{
+                width:'48px', height:'48px',
+                backgroundColor:'white',
+                borderRadius:'50%',
+                display:'flex', alignItems:'center', justifyContent:'center',
+                boxShadow:'0 2px 8px rgba(0,0,0,0.2)'
+              }}>
+                <img src={neuLogo} alt="NEU" style={{width:'40px', height:'40px', borderRadius:'50%'}} />
+              </div>
               <div>
-                <div style={{color:'white', fontWeight:'700', fontSize:'17px', letterSpacing:'0.3px'}}>NEU Library Admin</div>
-                <div style={{color:'rgba(255,255,255,0.65)', fontSize:'12px'}}>New Era University · Library Services</div>
+                <div style={{color:'white', fontWeight:'700', fontSize:'18px', letterSpacing:'0.3px'}}>NEU Library Admin</div>
+                <div style={{color:'rgba(255,255,255,0.6)', fontSize:'12px'}}>New Era University · Library Services</div>
               </div>
             </div>
-            <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
+            <div style={{display:'flex', alignItems:'center', gap:'16px'}}>
               <div style={{textAlign:'right'}}>
-                <div style={{color:'white', fontSize:'14px', fontWeight:'500'}}>{user.displayName}</div>
-                <div style={{color:'rgba(255,255,255,0.65)', fontSize:'12px'}}>Administrator</div>
+                <div style={{color:'white', fontSize:'14px', fontWeight:'600'}}>{user.displayName}</div>
+                <div style={{
+                  display:'inline-block',
+                  backgroundColor:'rgba(255,255,255,0.15)',
+                  color:'rgba(255,255,255,0.85)',
+                  fontSize:'11px',
+                  padding:'2px 8px',
+                  borderRadius:'20px',
+                  marginTop:'2px'
+                }}>Administrator</div>
               </div>
-              <button onClick={handleLogout} style={{
-                padding:'8px 18px',
-                backgroundColor:'rgba(255,255,255,0.15)',
-                color:'white',
-                border:'1px solid rgba(255,255,255,0.3)',
-                borderRadius:'8px',
-                cursor:'pointer',
-                fontSize:'13px',
-                fontWeight:'500'
-              }}>
+              <button
+                onClick={handleLogout}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor='rgba(255,255,255,0.25)'}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor='rgba(255,255,255,0.12)'}
+                style={{
+                  padding:'9px 20px',
+                  backgroundColor:'rgba(255,255,255,0.12)',
+                  color:'white',
+                  border:'1px solid rgba(255,255,255,0.25)',
+                  borderRadius:'8px',
+                  cursor:'pointer',
+                  fontSize:'13px',
+                  fontWeight:'500',
+                  transition:'background-color 0.2s'
+                }}>
                 Logout
               </button>
             </div>
           </div>
 
           {/* Tabs */}
-          <div style={{display:'flex', gap:'4px', borderTop:'1px solid rgba(255,255,255,0.15)'}}>
-            <button style={tabStyle('dashboard')} onClick={() => setActiveTab('dashboard')}>Dashboard</button>
-            <button style={tabStyle('visitors')} onClick={() => setActiveTab('visitors')}>Visitor Logs</button>
-            <button style={tabStyle('manage')} onClick={() => setActiveTab('manage')}>Manage Users</button>
+          <div style={{display:'flex', gap:'4px', borderTop:'1px solid rgba(255,255,255,0.12)'}}>
+            {['dashboard', 'visitors', 'manage'].map(t => (
+              <button key={t} style={tabStyle(t)} onClick={() => switchTab(t)}>
+                {t === 'dashboard' ? 'Dashboard' : t === 'visitors' ? 'Visitor Logs' : 'Manage Users'}
+              </button>
+            ))}
           </div>
-
         </div>
       </div>
 
       {/* Content */}
-      <div style={{maxWidth:'1200px', margin:'0 auto', padding:'24px'}}>
+      <div style={{
+        maxWidth:'1200px', margin:'0 auto', padding:'28px 24px',
+        opacity: animating ? 0 : 1,
+        transform: animating ? 'translateY(8px)' : 'translateY(0)',
+        transition: 'opacity 0.2s ease, transform 0.2s ease'
+      }}>
 
         {/* Dashboard Tab */}
         {activeTab === 'dashboard' && (
           <>
-            <h2 style={{color:'#1a5c1a', marginBottom:'20px', fontSize:'20px', fontWeight:'600'}}>Visitor Statistics</h2>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px'}}>
+              <h2 style={{color:'#1a5c1a', margin:0, fontSize:'20px', fontWeight:'700'}}>Visitor Statistics</h2>
+              <span style={{color:'#888', fontSize:'13px'}}>{new Date().toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'})}</span>
+            </div>
 
             {/* Filters */}
-            <div style={{backgroundColor:'white', padding:'16px 20px', borderRadius:'12px', boxShadow:'0 2px 8px rgba(0,0,0,0.06)', marginBottom:'20px', display:'flex', gap:'12px', flexWrap:'wrap', alignItems:'center'}}>
-              <span style={{fontWeight:'600', color:'#555', fontSize:'14px'}}>Filter by:</span>
+            <div style={{
+              backgroundColor:'white', padding:'16px 20px', borderRadius:'12px',
+              boxShadow:'0 2px 12px rgba(0,0,0,0.06)', marginBottom:'20px',
+              display:'flex', gap:'12px', flexWrap:'wrap', alignItems:'center',
+              borderLeft:'4px solid #1a5c1a'
+            }}>
+              <span style={{fontWeight:'700', color:'#1a5c1a', fontSize:'13px', textTransform:'uppercase', letterSpacing:'0.5px'}}>Filter</span>
               <select value={dateRange} onChange={e => setDateRange(e.target.value)} style={inputStyle}>
                 <option value="today">Today</option>
                 <option value="week">This Week</option>
@@ -197,47 +258,78 @@ function AdminPage({ user }) {
                 <option value="yes">Employees Only</option>
                 <option value="no">Students Only</option>
               </select>
-              <input placeholder="Filter by college" value={filterCollege} onChange={e => setFilterCollege(e.target.value)} style={inputStyle} />
+              <input placeholder="Filter by college..." value={filterCollege} onChange={e => setFilterCollege(e.target.value)} style={inputStyle} />
             </div>
 
             {/* Stats Cards */}
             <div style={{display:'flex', gap:'16px', flexWrap:'wrap', marginBottom:'24px'}}>
-              <div style={{...cardStyle, borderTopColor:'#1a5c1a'}}>
-                <h2 style={{color:'#1a5c1a', margin:'0 0 4px', fontSize:'36px', fontWeight:'700'}}>{filtered.length}</h2>
-                <p style={{color:'#888', margin:0, fontSize:'13px', fontWeight:'500', textTransform:'uppercase', letterSpacing:'0.5px'}}>Total Visits</p>
-              </div>
-              <div style={{...cardStyle, borderTopColor:'#c8a000'}}>
-                <h2 style={{color:'#c8a000', margin:'0 0 4px', fontSize:'36px', fontWeight:'700'}}>{filtered.filter(v => v.isEmployee).length}</h2>
-                <p style={{color:'#888', margin:0, fontSize:'13px', fontWeight:'500', textTransform:'uppercase', letterSpacing:'0.5px'}}>Employees</p>
-              </div>
-              <div style={{...cardStyle, borderTopColor:'#1a73e8'}}>
-                <h2 style={{color:'#1a73e8', margin:'0 0 4px', fontSize:'36px', fontWeight:'700'}}>{filtered.filter(v => !v.isEmployee).length}</h2>
-                <p style={{color:'#888', margin:0, fontSize:'13px', fontWeight:'500', textTransform:'uppercase', letterSpacing:'0.5px'}}>Students</p>
-              </div>
-              <div style={{...cardStyle, borderTopColor:'#c0392b'}}>
-                <h2 style={{color:'#c0392b', margin:'0 0 4px', fontSize:'36px', fontWeight:'700'}}>{[...new Set(filtered.map(v => v.college))].filter(Boolean).length}</h2>
-                <p style={{color:'#888', margin:0, fontSize:'13px', fontWeight:'500', textTransform:'uppercase', letterSpacing:'0.5px'}}>Colleges</p>
-              </div>
-              <div style={{...cardStyle, borderTopColor:'#6f42c1'}}>
-                <h2 style={{color:'#6f42c1', margin:'0 0 4px', fontSize:'36px', fontWeight:'700'}}>{[...new Set(filtered.map(v => v.reason))].filter(Boolean).length}</h2>
-                <p style={{color:'#888', margin:0, fontSize:'13px', fontWeight:'500', textTransform:'uppercase', letterSpacing:'0.5px'}}>Visit Reasons</p>
-              </div>
+              {statCards.map((card, i) => (
+                <div
+                  key={card.label}
+                  style={{
+                    backgroundColor:'white',
+                    padding:'20px 24px',
+                    borderRadius:'14px',
+                    boxShadow:'0 2px 12px rgba(0,0,0,0.06)',
+                    textAlign:'center',
+                    minWidth:'150px',
+                    flex:'1',
+                    borderTop:`4px solid ${card.color}`,
+                    transition:'transform 0.25s ease, box-shadow 0.25s ease',
+                    cursor:'default',
+                    animationDelay:`${i * 0.08}s`
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'translateY(-4px)'
+                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.06)'
+                  }}
+                >
+                  <div style={{
+                    width:'48px', height:'48px',
+                    backgroundColor: card.bg,
+                    borderRadius:'12px',
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    margin:'0 auto 12px'
+                  }}>
+                    <span style={{fontSize:'22px', fontWeight:'800', color: card.color}}>{card.value}</span>
+                  </div>
+                  <p style={{color:'#888', margin:0, fontSize:'12px', fontWeight:'600', textTransform:'uppercase', letterSpacing:'0.5px'}}>{card.label}</p>
+                </div>
+              ))}
             </div>
 
             {/* Reason Breakdown */}
-            <div style={{backgroundColor:'white', borderRadius:'12px', boxShadow:'0 2px 8px rgba(0,0,0,0.06)', padding:'24px', marginBottom:'24px'}}>
-              <h3 style={{color:'#333', margin:'0 0 20px', fontSize:'15px', fontWeight:'600', textTransform:'uppercase', letterSpacing:'0.5px'}}>Visits by Reason</h3>
-              {['Reading','Researching','Use of Computer','Meeting','Other'].map(r => {
+            <div style={{backgroundColor:'white', borderRadius:'14px', boxShadow:'0 2px 12px rgba(0,0,0,0.06)', padding:'24px', borderLeft:'4px solid #1a5c1a'}}>
+              <h3 style={{color:'#1a5c1a', margin:'0 0 20px', fontSize:'14px', fontWeight:'700', textTransform:'uppercase', letterSpacing:'0.5px'}}>Visits by Reason</h3>
+              {['Reading','Researching','Use of Computer','Meeting','Other'].map((r, i) => {
                 const count = filtered.filter(v => v.reason === r).length
                 const pct = filtered.length ? Math.round((count/filtered.length)*100) : 0
+                const colors = ['#1a5c1a', '#1a73e8', '#c8a000', '#c0392b', '#6f42c1']
                 return (
                   <div key={r} style={{marginBottom:'16px'}}>
-                    <div style={{display:'flex', justifyContent:'space-between', marginBottom:'6px'}}>
+                    <div style={{display:'flex', justifyContent:'space-between', marginBottom:'6px', alignItems:'center'}}>
                       <span style={{fontSize:'14px', color:'#333', fontWeight:'500'}}>{r}</span>
-                      <span style={{fontSize:'14px', color:'#888'}}>{count} visits ({pct}%)</span>
+                      <div style={{display:'flex', alignItems:'center', gap:'8px'}}>
+                        <span style={{
+                          padding:'2px 8px', borderRadius:'20px', fontSize:'11px', fontWeight:'600',
+                          backgroundColor: count > 0 ? '#e8f5e9' : '#f5f5f5',
+                          color: count > 0 ? '#1a5c1a' : '#999'
+                        }}>{count} visits</span>
+                        <span style={{fontSize:'13px', color:'#888', minWidth:'36px', textAlign:'right'}}>{pct}%</span>
+                      </div>
                     </div>
-                    <div style={{backgroundColor:'#f0f0f0', borderRadius:'4px', height:'8px'}}>
-                      <div style={{backgroundColor:'#1a5c1a', height:'8px', borderRadius:'4px', width:`${pct}%`, transition:'width 0.3s'}}/>
+                    <div style={{backgroundColor:'#f0f0f0', borderRadius:'6px', height:'10px', overflow:'hidden'}}>
+                      <div style={{
+                        backgroundColor: colors[i],
+                        height:'10px',
+                        borderRadius:'6px',
+                        width:`${pct}%`,
+                        transition:'width 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
+                      }}/>
                     </div>
                   </div>
                 )
@@ -250,38 +342,68 @@ function AdminPage({ user }) {
         {activeTab === 'visitors' && (
           <>
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px', flexWrap:'wrap', gap:'12px'}}>
-              <h2 style={{color:'#1a5c1a', margin:0, fontSize:'20px', fontWeight:'600'}}>Visitor Logs</h2>
+              <h2 style={{color:'#1a5c1a', margin:0, fontSize:'20px', fontWeight:'700'}}>Visitor Logs</h2>
               <div style={{display:'flex', gap:'8px', flexWrap:'wrap'}}>
-                <input placeholder="Search name, program, reason..." value={searchText} onChange={e => setSearchText(e.target.value)} style={{...inputStyle, width:'260px'}} />
-                <button onClick={exportPDF} style={{padding:'8px 18px', backgroundColor:'#c0392b', color:'white', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'14px'}}>
+                <input
+                  placeholder="Search name, program, reason..."
+                  value={searchText}
+                  onChange={e => setSearchText(e.target.value)}
+                  style={{...inputStyle, width:'260px'}}
+                />
+                <button
+                  onClick={exportPDF}
+                  onMouseEnter={e => { e.currentTarget.style.backgroundColor='#a93226'; e.currentTarget.style.transform='translateY(-1px)' }}
+                  onMouseLeave={e => { e.currentTarget.style.backgroundColor='#c0392b'; e.currentTarget.style.transform='translateY(0)' }}
+                  style={{padding:'8px 18px', backgroundColor:'#c0392b', color:'white', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'14px', transition:'all 0.2s'}}>
                   Export PDF
+                </button>
+                <button
+                  onClick={handleClearLogs}
+                  onMouseEnter={e => { e.currentTarget.style.backgroundColor='#444'; e.currentTarget.style.transform='translateY(-1px)' }}
+                  onMouseLeave={e => { e.currentTarget.style.backgroundColor='#555'; e.currentTarget.style.transform='translateY(0)' }}
+                  style={{padding:'8px 18px', backgroundColor:'#555', color:'white', border:'none', borderRadius:'8px', cursor:'pointer', fontWeight:'600', fontSize:'14px', transition:'all 0.2s'}}>
+                  Clear All Logs
                 </button>
               </div>
             </div>
 
-            <div style={{backgroundColor:'white', borderRadius:'12px', boxShadow:'0 2px 8px rgba(0,0,0,0.06)', overflow:'auto'}}>
+            <div style={{backgroundColor:'white', borderRadius:'14px', boxShadow:'0 2px 12px rgba(0,0,0,0.06)', overflow:'auto'}}>
               <table style={{width:'100%', borderCollapse:'collapse', fontSize:'14px'}}>
                 <thead>
-                  <tr style={{backgroundColor:'#1a5c1a'}}>
+                  <tr style={{background:'linear-gradient(135deg, #1a5c1a 0%, #0d3d0d 100%)'}}>
                     {['Name','Email','Program','College','Reason','Employee','Date'].map(h => (
-                      <th key={h} style={{padding:'14px 16px', textAlign:'left', color:'white', fontWeight:'600', fontSize:'13px', letterSpacing:'0.3px'}}>{h}</th>
+                      <th key={h} style={{padding:'14px 16px', textAlign:'left', color:'white', fontWeight:'600', fontSize:'12px', letterSpacing:'0.5px', textTransform:'uppercase'}}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.length === 0 ? (
-                    <tr><td colSpan={7} style={{padding:'40px', textAlign:'center', color:'#999'}}>No visits found.</td></tr>
+                    <tr>
+                      <td colSpan={7} style={{padding:'48px', textAlign:'center', color:'#999'}}>
+                        <div style={{fontSize:'32px', marginBottom:'8px'}}>📋</div>
+                        <div style={{fontWeight:'500'}}>No visits found</div>
+                        <div style={{fontSize:'13px', marginTop:'4px'}}>Try adjusting your filters</div>
+                      </td>
+                    </tr>
                   ) : filtered.map((v, i) => (
-                    <tr key={v.id} style={{backgroundColor: i % 2 === 0 ? 'white' : '#f9fdf9', borderBottom:'1px solid #f0f0f0'}}>
+                    <tr
+                      key={v.id}
+                      style={{backgroundColor: i % 2 === 0 ? 'white' : '#f9fdf9', borderBottom:'1px solid #f0f0f0', transition:'background-color 0.15s'}}
+                      onMouseEnter={e => e.currentTarget.style.backgroundColor='#f0f7f0'}
+                      onMouseLeave={e => e.currentTarget.style.backgroundColor = i % 2 === 0 ? 'white' : '#f9fdf9'}>
                       <td style={{padding:'12px 16px', fontWeight:'500'}}>{v.name}</td>
-                      <td style={{padding:'12px 16px', color:'#666'}}>{v.email}</td>
+                      <td style={{padding:'12px 16px', color:'#666', fontSize:'13px'}}>{v.email}</td>
                       <td style={{padding:'12px 16px'}}>{v.program}</td>
                       <td style={{padding:'12px 16px'}}>{v.college}</td>
                       <td style={{padding:'12px 16px'}}>
-                        <span style={{padding:'4px 10px', borderRadius:'20px', fontSize:'12px', backgroundColor:'#e8f5e9', color:'#1a5c1a', fontWeight:'500'}}>{v.reason}</span>
+                        <span style={{padding:'4px 10px', borderRadius:'20px', fontSize:'12px', backgroundColor:'#e8f5e9', color:'#1a5c1a', fontWeight:'600'}}>{v.reason}</span>
                       </td>
-                      <td style={{padding:'12px 16px'}}>{v.isEmployee ? 'Yes' : 'No'}</td>
-                      <td style={{padding:'12px 16px', color:'#666'}}>{v.timestamp?.toDate ? v.timestamp.toDate().toLocaleDateString() : ''}</td>
+                      <td style={{padding:'12px 16px'}}>
+                        <span style={{padding:'4px 10px', borderRadius:'20px', fontSize:'12px', backgroundColor: v.isEmployee ? '#fffde7' : '#e8f0fe', color: v.isEmployee ? '#c8a000' : '#1a73e8', fontWeight:'600'}}>
+                          {v.isEmployee ? 'Employee' : 'Student'}
+                        </span>
+                      </td>
+                      <td style={{padding:'12px 16px', color:'#666', fontSize:'13px'}}>{v.timestamp?.toDate ? v.timestamp.toDate().toLocaleDateString() : ''}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -293,32 +415,54 @@ function AdminPage({ user }) {
         {/* Manage Users Tab */}
         {activeTab === 'manage' && (
           <>
-            <h2 style={{color:'#1a5c1a', marginBottom:'20px', fontSize:'20px', fontWeight:'600'}}>Manage Users</h2>
-            <div style={{backgroundColor:'white', borderRadius:'12px', boxShadow:'0 2px 8px rgba(0,0,0,0.06)', overflow:'auto'}}>
+            <h2 style={{color:'#1a5c1a', marginBottom:'20px', fontSize:'20px', fontWeight:'700'}}>Manage Users</h2>
+            <div style={{backgroundColor:'white', borderRadius:'14px', boxShadow:'0 2px 12px rgba(0,0,0,0.06)', overflow:'auto'}}>
               <table style={{width:'100%', borderCollapse:'collapse', fontSize:'14px'}}>
                 <thead>
-                  <tr style={{backgroundColor:'#1a5c1a'}}>
+                  <tr style={{background:'linear-gradient(135deg, #1a5c1a 0%, #0d3d0d 100%)'}}>
                     {['Name','Email','Role','Status','Action'].map(h => (
-                      <th key={h} style={{padding:'14px 16px', textAlign:'left', color:'white', fontWeight:'600', fontSize:'13px', letterSpacing:'0.3px'}}>{h}</th>
+                      <th key={h} style={{padding:'14px 16px', textAlign:'left', color:'white', fontWeight:'600', fontSize:'12px', letterSpacing:'0.5px', textTransform:'uppercase'}}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((u, i) => (
-                    <tr key={u.id} style={{backgroundColor: i % 2 === 0 ? 'white' : '#f9fdf9', borderBottom:'1px solid #f0f0f0'}}>
-                      <td style={{padding:'12px 16px', fontWeight:'500'}}>{u.name}</td>
-                      <td style={{padding:'12px 16px', color:'#666'}}>{u.email}</td>
+                    <tr
+                      key={u.id}
+                      style={{backgroundColor: i % 2 === 0 ? 'white' : '#f9fdf9', borderBottom:'1px solid #f0f0f0', transition:'background-color 0.15s'}}
+                      onMouseEnter={e => e.currentTarget.style.backgroundColor='#f0f7f0'}
+                      onMouseLeave={e => e.currentTarget.style.backgroundColor = i % 2 === 0 ? 'white' : '#f9fdf9'}>
+                      <td style={{padding:'12px 16px', fontWeight:'600'}}>{u.name}</td>
+                      <td style={{padding:'12px 16px', color:'#666', fontSize:'13px'}}>{u.email}</td>
                       <td style={{padding:'12px 16px'}}>
-                        <span style={{padding:'4px 10px', borderRadius:'20px', fontSize:'12px', backgroundColor: u.role === 'admin' ? '#e8f5e9' : '#e8f0fe', color: u.role === 'admin' ? '#1a5c1a' : '#1a73e8', fontWeight:'500'}}>{u.role}</span>
+                        <span style={{
+                          padding:'4px 12px', borderRadius:'20px', fontSize:'12px', fontWeight:'600',
+                          backgroundColor: u.role === 'admin' ? '#e8f5e9' : '#e8f0fe',
+                          color: u.role === 'admin' ? '#1a5c1a' : '#1a73e8'
+                        }}>{u.role}</span>
                       </td>
                       <td style={{padding:'12px 16px'}}>
-                        <span style={{padding:'4px 10px', borderRadius:'20px', fontSize:'12px', backgroundColor: u.isBlocked ? '#fce8e6' : '#e8f5e9', color: u.isBlocked ? '#c0392b' : '#1a5c1a', fontWeight:'500'}}>
+                        <span style={{
+                          padding:'4px 12px', borderRadius:'20px', fontSize:'12px', fontWeight:'600',
+                          backgroundColor: u.isBlocked ? '#fce8e6' : '#e8f5e9',
+                          color: u.isBlocked ? '#c0392b' : '#1a5c1a'
+                        }}>
                           {u.isBlocked ? 'Blocked' : 'Active'}
                         </span>
                       </td>
                       <td style={{padding:'12px 16px'}}>
                         {u.role !== 'admin' && (
-                          <button onClick={() => handleBlock(u.id, u.isBlocked)} style={{padding:'6px 14px', backgroundColor: u.isBlocked ? '#1a5c1a' : '#c0392b', color:'white', border:'none', borderRadius:'6px', cursor:'pointer', fontSize:'12px', fontWeight:'600'}}>
+                          <button
+                            onClick={() => handleBlock(u.id, u.isBlocked)}
+                            onMouseEnter={e => { e.currentTarget.style.opacity='0.85'; e.currentTarget.style.transform='translateY(-1px)' }}
+                            onMouseLeave={e => { e.currentTarget.style.opacity='1'; e.currentTarget.style.transform='translateY(0)' }}
+                            style={{
+                              padding:'6px 16px',
+                              backgroundColor: u.isBlocked ? '#1a5c1a' : '#c0392b',
+                              color:'white', border:'none', borderRadius:'8px',
+                              cursor:'pointer', fontSize:'12px', fontWeight:'600',
+                              transition:'all 0.2s'
+                            }}>
                             {u.isBlocked ? 'Unblock' : 'Block'}
                           </button>
                         )}

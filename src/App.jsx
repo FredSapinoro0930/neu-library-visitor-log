@@ -6,6 +6,7 @@ import { doc, getDoc } from 'firebase/firestore'
 import Login from './pages/Login'
 import VisitorPage from './pages/VisitorPage'
 import AdminPage from './pages/AdminPage'
+import ChoicePage from './pages/ChoicePage'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -31,12 +32,17 @@ function App() {
     return () => unsubscribe()
   }, [])
 
-  if (loading) return <div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'100vh'}}>Loading...</div>
+  if (loading) return (
+    <div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'100vh',background:'#1a5c1a',color:'white',fontSize:'18px'}}>
+      Loading...
+    </div>
+  )
 
   return (
     <Routes>
-      <Route path="/" element={!user ? <Login /> : role === 'admin' ? <Navigate to="/admin" /> : <Navigate to="/visitor" />} />
-      <Route path="/visitor" element={user && role === 'user' ? <VisitorPage user={user} /> : <Navigate to="/" />} />
+      <Route path="/" element={!user ? <Login /> : role === 'admin' ? <Navigate to="/choice" /> : <Navigate to="/visitor" />} />
+      <Route path="/choice" element={user && role === 'admin' ? <ChoicePage user={user} /> : <Navigate to="/" />} />
+      <Route path="/visitor" element={user ? <VisitorPage user={user} /> : <Navigate to="/" />} />
       <Route path="/admin" element={user && role === 'admin' ? <AdminPage user={user} /> : <Navigate to="/" />} />
     </Routes>
   )
