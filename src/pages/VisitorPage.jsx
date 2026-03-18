@@ -4,7 +4,7 @@ import { signOut } from 'firebase/auth'
 import { collection, addDoc, query, where, getDocs } from 'firebase/firestore'
 import { useNavigate } from 'react-router-dom'
 import neuLogo from '../assets/neu.png'
-import schoolBg from '../assets/6-51.jpg'
+import schoolBg from '../assets/6-51.png'
 
 function VisitorPage({ user }) {
   const navigate = useNavigate()
@@ -64,25 +64,25 @@ function VisitorPage({ user }) {
   }
 
   const bgStyle = {
-    position: 'absolute',
+    position: 'fixed',
     top: 0, left: 0, right: 0, bottom: 0,
     backgroundImage: `url(${schoolBg})`,
     backgroundSize: 'cover',
     backgroundPosition: 'center center',
     backgroundRepeat: 'no-repeat',
-    filter: 'blur(2px)',
-    zIndex: -1
+    filter: 'blur(3px)',
+    zIndex: -2
   }
 
   const overlay = {
-    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
     background: 'rgba(0,0,0,0.45)',
-    zIndex: 0
+    zIndex: -1
   }
 
   const cardStyle = {
     position: 'relative',
-    backgroundColor: 'rgba(255,255,255,0.85)',
+    backgroundColor: 'rgba(255,255,255,0.72)',
     backdropFilter: 'blur(8px)',
     borderRadius: '16px',
     boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
@@ -91,7 +91,7 @@ function VisitorPage({ user }) {
     maxWidth: '480px',
     borderTop: '5px solid #1a5c1a',
     zIndex: 1,
-    transition: 'transform 0.3s, box-shadow 0.3s'
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease'
   }
 
   const inputStyle = {
@@ -104,7 +104,7 @@ function VisitorPage({ user }) {
     marginBottom: '16px',
     outline: 'none',
     backgroundColor: 'rgba(255,255,255,0.9)',
-    transition: 'border-color 0.2s'
+    transition: 'border-color 0.2s, box-shadow 0.2s'
   }
 
   const labelStyle = {
@@ -240,33 +240,13 @@ function VisitorPage({ user }) {
         </div>
 
         <label style={labelStyle}>Program</label>
-        <input
-          value={program}
-          onChange={e => setProgram(e.target.value)}
-          placeholder="e.g. BSIT, BSCS, BSED"
-          style={inputStyle}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-        />
+        <input value={program} onChange={e => setProgram(e.target.value)} placeholder="e.g. BSIT, BSCS, BSED" style={inputStyle} onFocus={handleInputFocus} onBlur={handleInputBlur} />
 
         <label style={labelStyle}>College</label>
-        <input
-          value={college}
-          onChange={e => setCollege(e.target.value)}
-          placeholder="e.g. CICS, CBA, CEA"
-          style={inputStyle}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-        />
+        <input value={college} onChange={e => setCollege(e.target.value)} placeholder="e.g. CICS, CBA, CEA" style={inputStyle} onFocus={handleInputFocus} onBlur={handleInputBlur} />
 
         <label style={labelStyle}>Reason for Visit</label>
-        <select
-          value={reason}
-          onChange={e => setReason(e.target.value)}
-          style={inputStyle}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-        >
+        <select value={reason} onChange={e => setReason(e.target.value)} style={inputStyle} onFocus={handleInputFocus} onBlur={handleInputBlur}>
           <option value="">Select a reason</option>
           <option value="Reading">Reading</option>
           <option value="Researching">Researching</option>
@@ -276,12 +256,7 @@ function VisitorPage({ user }) {
         </select>
 
         <label style={{display:'flex', alignItems:'center', gap:'10px', marginBottom:'24px', cursor:'pointer'}}>
-          <input
-            type="checkbox"
-            checked={isEmployee}
-            onChange={e => setIsEmployee(e.target.checked)}
-            style={{width:'16px', height:'16px', accentColor:'#1a5c1a'}}
-          />
+          <input type="checkbox" checked={isEmployee} onChange={e => setIsEmployee(e.target.checked)} style={{width:'16px', height:'16px', accentColor:'#1a5c1a'}} />
           <span style={{fontSize:'14px', color:'#333'}}>I am an employee (teacher/staff)</span>
         </label>
 

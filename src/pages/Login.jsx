@@ -4,7 +4,7 @@ import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase
 import { useNavigate } from 'react-router-dom'
 import { useState, useRef, useEffect } from 'react'
 import neuLogo from '../assets/neu.png'
-import schoolBg from '../assets/6-51.jpg'
+import schoolBg from '../assets/6-51.png'
 
 function Login() {
   const navigate = useNavigate()
@@ -185,8 +185,18 @@ function Login() {
     e.currentTarget.style.boxShadow = 'none'
   }
 
+  const handleCardHover = e => {
+    e.currentTarget.style.transform = 'scale(1.02)'
+    e.currentTarget.style.boxShadow = '0 25px 70px rgba(0,0,0,0.6)'
+  }
+
+  const handleCardLeave = e => {
+    e.currentTarget.style.transform = 'scale(1)'
+    e.currentTarget.style.boxShadow = '0 20px 60px rgba(0,0,0,0.5)'
+  }
+
   const divider = (
-    <div style={{display:'flex', height:'4px', borderRadius:'2px', overflow:'hidden', margin:'12px auto 20px', width:'80px'}}>
+    <div style={{display:'flex', height:'1px', borderRadius:'2px', overflow:'hidden', margin:'12px auto 20px', width:'200px'}}>
       <div style={{flex:1, backgroundColor:'#1a5c1a'}}/>
       <div style={{flex:1, backgroundColor:'#fff'}}/>
       <div style={{flex:1, backgroundColor:'#c0392b'}}/>
@@ -212,7 +222,7 @@ function Login() {
         backgroundImage: `url(${schoolBg})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        filter: 'blur(2px)',
+        filter: 'blur(3px)',
         zIndex: -2
       }}/>
 
@@ -225,20 +235,24 @@ function Login() {
       }}/>
 
       {/* Card */}
-      <div style={{
-        position: 'relative',
-        zIndex: 1,
-        backgroundColor: 'rgba(255,255,255,0.88)',
-        backdropFilter: 'blur(8px)',
-        borderRadius: '16px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-        padding: '40px',
-        width: '100%',
-        maxWidth: '440px',
-        textAlign: 'center',
-        borderTop: '5px solid #1a5c1a',
-        overflow: 'hidden'
-      }}>
+      <div
+        onMouseEnter={handleCardHover}
+        onMouseLeave={handleCardLeave}
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          backgroundColor: 'rgba(255,255,255,0.65)',
+          backdropFilter: 'blur(8px)',
+          borderRadius: '16px',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+          padding: '40px',
+          width: '100%',
+          maxWidth: '440px',
+          textAlign: 'center',
+          borderTop: '5px solid #1a5c1a',
+          overflow: 'hidden',
+          transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+        }}>
 
         <img src={neuLogo} alt="NEU Logo" style={{width:'90px', height:'90px', marginBottom:'12px'}} />
         <h1 style={{color:'#1a5c1a', fontSize:'20px', fontWeight:'700', margin:'0 0 4px'}}>New Era University</h1>
@@ -246,7 +260,7 @@ function Login() {
         {divider}
 
         {/* Tabs */}
-        <div style={{display:'flex', backgroundColor:'#f0f0f0', borderRadius:'8px', padding:'4px', marginBottom:'20px'}}>
+        <div style={{display:'flex', backgroundColor:'rgba(240,240,240,0.8)', borderRadius:'8px', padding:'4px', marginBottom:'20px'}}>
           <button onClick={() => { setTab('google'); setIsRegistering(false) }} style={{
             flex:1, padding:'8px', border:'none', borderRadius:'6px', cursor:'pointer', fontSize:'13px', fontWeight:'600',
             backgroundColor: tab === 'google' ? 'white' : 'transparent',
@@ -274,7 +288,7 @@ function Login() {
             {/* Google Login Tab */}
             {tab === 'google' && (
               <div className="fade-in">
-                <p style={{color:'#666', fontSize:'13px', marginBottom:'20px'}}>
+                <p style={{color:'#555', fontSize:'13px', marginBottom:'20px'}}>
                   Sign in with your institutional Google account
                 </p>
                 <button
@@ -293,14 +307,14 @@ function Login() {
             {/* Student Login Tab */}
             {tab === 'student' && !isRegistering && (
               <div className="fade-in">
-               <p style={{color:'#666', fontSize:'13px', marginBottom:'16px', textAlign:'left'}}>
-  Sign in using your <strong>Student ID</strong> or <strong>institutional email</strong>
-</p>
-<div style={{backgroundColor:'#fff8e1', border:'1px solid #ffe082', borderRadius:'8px', padding:'10px 12px', marginBottom:'16px', textAlign:'left'}}>
-  <p style={{color:'#856404', fontSize:'12px', margin:0}}>
-    Note: This is for manually registered accounts only. If you signed in with Google before, please use the Google Login tab.
-  </p>
-</div>
+                <p style={{color:'#555', fontSize:'13px', marginBottom:'16px', textAlign:'left'}}>
+                  Sign in using your <strong>Student ID</strong> or <strong>institutional email</strong>
+                </p>
+                <div style={{backgroundColor:'#fff8e1', border:'1px solid #ffe082', borderRadius:'8px', padding:'10px 12px', marginBottom:'16px', textAlign:'left'}}>
+                  <p style={{color:'#856404', fontSize:'12px', margin:0}}>
+                    Note: This is for manually registered accounts only. If you signed in with Google before, please use the Google Login tab.
+                  </p>
+                </div>
                 <input
                   value={loginInput}
                   onChange={e => setLoginInput(e.target.value)}
@@ -346,7 +360,7 @@ function Login() {
                 <h3 style={{color:'#1a5c1a', margin:'0 0 16px', fontSize:'16px', textAlign:'left'}}>Create Account</h3>
                 <input value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" style={inputStyle} onFocus={handleInputFocus} onBlur={handleInputBlur} />
                 <input value={studentId} onChange={e => setStudentId(e.target.value)} placeholder="Student ID (e.g. 2021-12345)" style={inputStyle} onFocus={handleInputFocus} onBlur={handleInputBlur} />
-                <input value={regEmail} onChange={e => setRegEmail(e.target.value)} placeholder="Institutional Email (e.g. 2021-12345@neu.edu.ph)" style={inputStyle} onFocus={handleInputFocus} onBlur={handleInputBlur} />
+                <input value={regEmail} onChange={e => setRegEmail(e.target.value)} placeholder="Institutional Email (e.g. fredpogi@neu.edu.ph)" style={inputStyle} onFocus={handleInputFocus} onBlur={handleInputBlur} />
                 <input value={program} onChange={e => setProgram(e.target.value)} placeholder="Program (e.g. BSIT)" style={inputStyle} onFocus={handleInputFocus} onBlur={handleInputBlur} />
                 <input value={college} onChange={e => setCollege(e.target.value)} placeholder="College (e.g. CICS)" style={inputStyle} onFocus={handleInputFocus} onBlur={handleInputBlur} />
                 <input value={password} onChange={e => setPassword(e.target.value)} placeholder="Password (min. 6 characters)" type="password" style={inputStyle} onFocus={handleInputFocus} onBlur={handleInputBlur} />
@@ -376,7 +390,7 @@ function Login() {
           </div>
         </div>
 
-        <p style={{color:'#999', fontSize:'11px', marginTop:'16px'}}>
+        <p style={{color:'#666', fontSize:'11px', marginTop:'16px'}}>
           © {new Date().getFullYear()} New Era University · Library Services
         </p>
       </div>

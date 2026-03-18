@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { signOut } from 'firebase/auth'
 import { auth } from '../firebase'
 import neuLogo from '../assets/neu.png'
-import schoolBg from '../assets/6-51.jpg'
+import schoolBg from '../assets/6-51.png'
 
 function ChoicePage({ user }) {
   const navigate = useNavigate()
