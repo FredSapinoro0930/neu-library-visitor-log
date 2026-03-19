@@ -20,6 +20,7 @@ function AdminPage({ user }) {
   const [endDate, setEndDate] = useState('')
   const [activeTab, setActiveTab] = useState('dashboard')
   const [animating, setAnimating] = useState(false)
+  const [hoveredTab, setHoveredTab] = useState(null)
 
   useEffect(() => { fetchData() }, [])
 
@@ -99,10 +100,10 @@ function AdminPage({ user }) {
     pdf.text('NEU Library Visitor Report', 14, 16)
     autoTable(pdf, {
       startY: 24,
-      head: [['Name', 'Email', 'Program', 'College', 'Reason', 'Employee', 'Date']],
+      head: [['Name', 'Email', 'Program', 'College', 'Reason', 'Type', 'Date']],
       body: filtered.map(v => [
         v.name, v.email, v.program, v.college, v.reason,
-        v.isEmployee ? 'Yes' : 'No',
+        v.isEmployee ? 'Employee' : 'Student',
         v.timestamp?.toDate ? v.timestamp.toDate().toLocaleDateString() : ''
       ])
     })
@@ -124,14 +125,15 @@ function AdminPage({ user }) {
   const tabStyle = (tab) => ({
     padding: '14px 28px',
     border: 'none',
-    borderBottom: activeTab === tab ? '3px solid white' : '3px solid transparent',
-    backgroundColor: 'transparent',
-    color: activeTab === tab ? 'white' : 'rgba(255,255,255,0.55)',
+    borderBottom: activeTab === tab ? '3px solid white' : hoveredTab === tab ? '3px solid rgba(255,255,255,0.4)' : '3px solid transparent',
+    backgroundColor: hoveredTab === tab && activeTab !== tab ? 'rgba(255,255,255,0.08)' : 'transparent',
+    color: activeTab === tab ? 'white' : hoveredTab === tab ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.55)',
     fontWeight: activeTab === tab ? '700' : '400',
     fontSize: '14px',
     cursor: 'pointer',
     letterSpacing: '0.3px',
-    transition: 'all 0.25s ease'
+    transition: 'all 0.25s ease',
+    transform: hoveredTab === tab && activeTab !== tab ? 'translateY(-1px)' : 'translateY(0)'
   })
 
   const statCards = [
@@ -203,7 +205,12 @@ function AdminPage({ user }) {
           {/* Tabs */}
           <div style={{display:'flex', gap:'4px', borderTop:'1px solid rgba(255,255,255,0.12)'}}>
             {['dashboard', 'visitors', 'manage'].map(t => (
-              <button key={t} style={tabStyle(t)} onClick={() => switchTab(t)}>
+              <button
+                key={t}
+                style={tabStyle(t)}
+                onClick={() => switchTab(t)}
+                onMouseEnter={() => setHoveredTab(t)}
+                onMouseLeave={() => setHoveredTab(null)}>
                 {t === 'dashboard' ? 'Dashboard' : t === 'visitors' ? 'Visitor Logs' : 'Manage Users'}
               </button>
             ))}
@@ -276,8 +283,7 @@ function AdminPage({ user }) {
                     flex:'1',
                     borderTop:`4px solid ${card.color}`,
                     transition:'transform 0.25s ease, box-shadow 0.25s ease',
-                    cursor:'default',
-                    animationDelay:`${i * 0.08}s`
+                    cursor:'default'
                   }}
                   onMouseEnter={e => {
                     e.currentTarget.style.transform = 'translateY(-4px)'
@@ -371,7 +377,7 @@ function AdminPage({ user }) {
               <table style={{width:'100%', borderCollapse:'collapse', fontSize:'14px'}}>
                 <thead>
                   <tr style={{background:'linear-gradient(135deg, #1a5c1a 0%, #0d3d0d 100%)'}}>
-                    {['Name','Email','Program','College','Reason','Employee','Date'].map(h => (
+                    {['Name','Email','Program','College','Reason','Type','Date'].map(h => (
                       <th key={h} style={{padding:'14px 16px', textAlign:'left', color:'white', fontWeight:'600', fontSize:'12px', letterSpacing:'0.5px', textTransform:'uppercase'}}>{h}</th>
                     ))}
                   </tr>
