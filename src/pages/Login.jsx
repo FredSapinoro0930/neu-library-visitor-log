@@ -275,7 +275,7 @@ function Login() {
             color: tab === 'student' ? '#1a5c1a' : '#666',
             boxShadow: tab === 'student' ? '0 1px 4px rgba(0,0,0,0.15)' : 'none',
             transition: 'all 0.35s cubic-bezier(0.16, 1, 0.3, 1)'
-          }}>Student Login</button>
+          }}>Email / ID</button>
         </div>
 
         {/* Animated height wrapper */}
