@@ -215,8 +215,9 @@ npm run build
 
 ## 👨‍💻 Developer
 
-**Fredrick John J. Sapinoro** 
+Fredrick John J. Sapinoro
 2nd Year Bachelor of Science in Information Technology
+
 
 ---
 
