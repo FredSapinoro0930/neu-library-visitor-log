@@ -6,7 +6,13 @@ The **NEU Library Visitor Log System** is a web-based application developed to m
 
 It supports both **student and staff access**, as well as **administrative monitoring**, ensuring accurate data collection and improved operational efficiency within the university library.
 
+
 ---
+
+## https://neu-library-visitor-log-eefe3.web.app/
+
+---
+
 
 ## 🎯 Objectives
 
@@ -15,10 +21,6 @@ It supports both **student and staff access**, as well as **administrative monit
 * To enhance **user convenience** through multiple login options
 * To implement **role-based access control** for administrators
 * To improve overall **library monitoring and reporting**
-
----
-
-## https://neu-library-visitor-log-eefe3.web.app/
 
 ---
 
