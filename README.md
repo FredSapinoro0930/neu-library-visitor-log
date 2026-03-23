@@ -218,10 +218,5 @@ npm run build
 **Fredrick John J. Sapinoro**<br>*2nd Year Bachelor of Science in Information Technology*
 
 
----
 
-## 📄 Conclusion
 
-The NEU Library Visitor Log System successfully demonstrates how modern web technologies can be utilized to improve traditional processes. By providing a secure, efficient, and user-friendly platform, the system enhances both user experience and administrative control within the university library environment.
-
----
